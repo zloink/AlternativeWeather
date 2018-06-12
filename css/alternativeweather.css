@@ -1,0 +1,61 @@
+body {
+    background-color: lightblue;
+}
+
+h1 {
+    font-family:tahoma;
+    font-size: 60px;
+    text-align: center;
+}
+
+h2 {
+    font-family: tahoma;
+    font-size: 45px;
+    text-align: center;
+}
+
+h3 {
+    font-family: tahoma;
+    font-size: 30px;
+    text-align: center;
+}
+
+h4 {
+    font-family: tahoma;
+    font-size: 20px;
+    text-align: center;
+}
+
+h5 {
+    font-size: 15px;
+    font-family: tahoma;
+    text-align: center;
+}
+
+h6 {
+    font-size: 15px;
+    font-family: tahoma;
+}
+
+p {
+     font-size: 15px;
+    font-family: tahoma; 
+}
+
+td{
+    text-align:center;
+}
+
+#Temperature {
+    font-size: 100px;
+}
+
+.header {
+    border-style: solid;
+    border-width: 0px 0px 2px 0px;
+}
+
+.today {
+    margin: auto;
+    width: 50%;
+}
