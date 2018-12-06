@@ -42,7 +42,7 @@ function loadIndex() {
 	var maxTemp = getMaximumTemperature(idealTemp);
 	var minTemp = getMinimumTemperature(maxTemp);
 	
-	document.getElementById("Time").innerHTML=date;
+	//document.getElementById("Time").innerHTML=date;
 	
 	if(hour < 7 || hour > 18)
 	{
@@ -51,7 +51,7 @@ function loadIndex() {
 		document.getElementById("Image").src = "./img/Moon.png";
 		document.getElementById("Image").alt = "Moon.png";
 		
-		document.body.style.backgroundColor = "MediumPurple";
+		document.body.style.backgroundColor = "SteelBlue";
 	}
 	else
 	{
