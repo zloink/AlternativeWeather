@@ -48,7 +48,6 @@ function loadIndex() {
 		setTemperature(minTemp);
 		document.getElementById("Image").src = "./img/moon-large.png";
 		document.getElementById("Image").alt = "moon-large.png";
-		
 		document.body.style.backgroundColor = "SteelBlue";
 	}
 	else
