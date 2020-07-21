@@ -38,18 +38,16 @@ function loadIndex() {
 	var hour = date.getHours();
 	var day = date.getDay();
 	
-	var idealTemp = 79;
+	var idealTemp = 75;
 	var maxTemp = getMaximumTemperature(idealTemp);
 	var minTemp = getMinimumTemperature(maxTemp);
 	
-	//document.getElementById("Time").innerHTML=date;
-	
-	if(hour < 7 || hour > 18)
+	if(hour < 7 || hour > 20)
 	{
 		document.getElementById("Description").innerHTML="It is " + minTemp + " degrees with clear skies. What a tremendous evening!";
 		setTemperature(minTemp);
-		document.getElementById("Image").src = "./img/Moon.png";
-		document.getElementById("Image").alt = "Moon.png";
+		document.getElementById("Image").src = "./img/moon-large.png";
+		document.getElementById("Image").alt = "moon-large.png";
 		
 		document.body.style.backgroundColor = "SteelBlue";
 	}
@@ -57,8 +55,8 @@ function loadIndex() {
 	{
 		document.getElementById("Description").innerHTML="It is " + maxTemp + " degrees with sunny skies. This weather is the greatest!";
 		setTemperature(maxTemp);
-		document.getElementById("Image").src = "./img/Sunny.png";
-		document.getElementById("Image").alt = "Sunny.png";
+		document.getElementById("Image").src = "./img/sun-large.png";
+		document.getElementById("Image").alt = "sun-large.png";
 	}
 	
 	switch(day) {
