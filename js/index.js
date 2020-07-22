@@ -10,27 +10,74 @@ function getDayMonth(date)
 	return (date.getMonth() + 1) + "/" + date.getDate();
 }
 
-function setTemperature(temperature)
+function getIdealTemperature()
 {
-	document.getElementById("Temperature").innerHTML= temperature + "&deg";
+    return 75;
+}
+
+function setMainTemperature(temp)
+{
+	document.getElementById("Temperature").innerHTML= temp + "&deg";
+}
+
+function adjustMainTemperature(tempAdjustment)
+{
+    var currentTempString = document.getElementById("Temperature").innerHTML;
+    var currentTemp = parseInt(currentTempString.substring(0, 2));
+
+    var newTemp = currentTemp + tempAdjustment;
+
+    document.getElementById("Temperature").innerHTML = newTemp + "&deg";
+    updateDescription(newTemp);
+}
+
+function adjustDailyTemperature(day, tempAdjustment)
+{
+    var currentHigh = document.getElementById("High" + day).innerHTML;
+
+    var newHigh = parseInt(currentHigh.substr(6,7)) + tempAdjustment;
+    var newLow = getMinimumTemperature(newHigh);
+
+    document.getElementById("High" + day).innerHTML = "High: " + newHigh + "&deg";
+    document.getElementById("Low" + day).innerHTML = "Low: " + newLow + "&deg";
+
 }
 
 function getMaximumTemperature(idealTemperature)
-{
-	var rand = Math.random()*3;
-	var modifier = Math.floor(rand + 1);
-	
-	if(Math.random() < .5)
-	{
-		return idealTemperature - modifier;
-	}
-	
-	return idealTemperature + modifier;
+{   
+    return idealTemperature + 3;
 }
 
 function getMinimumTemperature(maxTemp)
 {
 	return maxTemp - 10;
+}
+
+function updateDescription(temp)
+{
+    var date = new Date();
+    var hour = date.getHours();
+    var weatherCondition = "clear";
+
+    var imageDescription = document.getElementById("Image").alt;
+
+    if (imageDescription == "rain.png")
+    {
+        weatherCondition = "rainy";
+    }
+    if (imageDescription == "snow.png")
+    {
+        weatherCondition = "snowy";
+    }
+
+    var dayTime = "day";
+
+    if (hour < 7 || hour > 20)
+    {
+        dayTime = "night";
+    }
+
+    document.getElementById("Description").innerHTML="It is " + temp + " degrees with " + weatherCondition + " skies. Believe me, this weather is incredible!";
 }
 
 function loadIndex()
@@ -39,7 +86,7 @@ function loadIndex()
     var hour = date.getHours();
 	var day = date.getDay();
 	
-	var idealTemp = 75;
+	var idealTemp = getIdealTemperature();
 	var maxTemp = getMaximumTemperature(idealTemp);
 	var minTemp = getMinimumTemperature(maxTemp);
 
@@ -144,14 +191,14 @@ function resetMainDisplay()
     var date = new Date();
     var hour = date.getHours();
 
-    var idealTemp = 75;
+    var idealTemp = getIdealTemperature();
 	var maxTemp = getMaximumTemperature(idealTemp);
 	var minTemp = getMinimumTemperature(maxTemp);
 
     if(hour < 7 || hour > 20)
 	{
 		document.getElementById("Description").innerHTML="It is " + minTemp + " degrees with clear skies. What a tremendous evening!";
-		setTemperature(minTemp);
+		setMainTemperature(minTemp);
 		document.getElementById("Image").src = "./img/moon-large.png";
         document.getElementById("Image").alt = "moon.png";
         document.body.style.backgroundColor = "SteelBlue";
@@ -159,7 +206,7 @@ function resetMainDisplay()
 	else
 	{
 		document.getElementById("Description").innerHTML="It is " + maxTemp + " degrees with sunny skies. This weather is the greatest!";
-		setTemperature(maxTemp);
+		setMainTemperature(maxTemp);
 		document.getElementById("Image").src = "./img/sun-large.png";
         document.getElementById("Image").alt = "sun.png";
         document.body.style.backgroundColor = "lightSteelBlue";
@@ -168,11 +215,19 @@ function resetMainDisplay()
 
 function changeWeather(elementId)
 {
+    var main = false;
     var suffix = "-small.png";
+    var dayInt = 0;
 
     if(elementId == "Image")
     {
+        main = true;
         suffix = "-large.png";
+    }
+    else
+    {
+        var day = elementId.substring(5, 6);
+        dayInt = parseInt(day);
     }
 
     var imageDescription = document.getElementById(elementId).alt;
@@ -181,17 +236,35 @@ function changeWeather(elementId)
     {
         document.getElementById(elementId).src = "./img/rain" + suffix;
         document.getElementById(elementId).alt = "rain.png";
+
+        if(main)
+        {
+            adjustMainTemperature(-10);
+        }
+        else
+        {
+            adjustDailyTemperature(dayInt, -10);
+        }
     }
 
     if (imageDescription == "rain.png")
     {
         document.getElementById(elementId).src = "./img/snow" + suffix;
         document.getElementById(elementId).alt = "snow.png";
+
+        if(main)
+        {
+            adjustMainTemperature(-38);
+        }
+        else
+        {
+            adjustDailyTemperature(dayInt, -38);
+        }
     }
 
     if (imageDescription == "snow.png")
     {
-        if (elementId == "Image")
+        if (main)
         {
             resetMainDisplay();
         }
@@ -199,6 +272,7 @@ function changeWeather(elementId)
         {
             document.getElementById(elementId).src = "./img/sun" + suffix;
             document.getElementById(elementId).alt = "sun.png";
+            adjustDailyTemperature(dayInt, +48);
         }
     }
 }
