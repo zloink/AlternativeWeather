@@ -50,8 +50,8 @@ class WeatherCondition
 var idealTemp = 75;
 var highAdjustment = 3;
 var lowAdjustment = -10;
-var rainAdjustment = -10;
-var snowAdjustment = -45;
+//var rainAdjustment = -10;
+//var snowAdjustment = -45;
 
 var dayList =
 [
@@ -68,8 +68,24 @@ var dayList =
 var weatherConditionList =
 [
     clear = new WeatherCondition ("clear", "./img/sun", 0),
-    rain = new WeatherCondition ("rain", "./img/rain", -10),
-    snow = new WeatherCondition ("snow", "./img/snow", -45)
+    rain = new WeatherCondition ("rainy", "./img/rain", -10),
+    snow = new WeatherCondition ("snowy", "./img/snow", -45)
+];
+
+var weatherDescriptionList =
+[
+    "This weather is the greatest!",
+    "This weather is tremendous!",
+    "Believe me, this weather is going to be fabulous!",
+    "You can't get anything better than this weather!",
+    "Let's make weather great again!",
+    "I understand weather better than anybody, and let me tell you, this weather is the greatest!",
+    "This weather is phenomenal. I mean, just phenomenal!",
+    "Is the weather great here? Yes, of course it is. You're welcome!",
+    "You wouldn't believe this weather!",
+    "That other weather site you visit is FAKE WEATHER!",
+    "This weather is huge!",
+    "I've studied weather better than anybody. This is the best weather!"
 ];
 
 function getDayMonth (date)
@@ -106,54 +122,27 @@ function getDayMonth (date)
     return dayName + month + "/" + dayOfMonth;
 }
 
-function updateDescription(temp)
-{
-    var date = new Date();
-    var hour = date.getHours();
-    var weatherCondition = "clear";
-
-    var imageDescription = document.getElementById("Image").alt;
-
-    if (imageDescription == "rain.png")
-    {
-        weatherCondition = "rainy";
-    }
-    if (imageDescription == "snow.png")
-    {
-        weatherCondition = "snowy";
-    }
-
-    var dayTime = "day";
-
-    if (hour < 7 || hour > 20)
-    {
-        dayTime = "night";
-    }
-
-    document.getElementById("Description").innerHTML="It is " + temp + " degrees with " + weatherCondition + " skies. Believe me, this weather is incredible!";
-}
-
 function loadIndex()
 {
-    dayList.forEach(displayDescription);
-    dayList.forEach(displayTemperatures);
-    dayList.forEach(displayImage);
+    dayList.forEach(displayAll);
+}
+
+function displayAll(dayToSet)
+{
+    displayImage(dayToSet);
+    displayTemperatures(dayToSet);
+    displayDescription(dayToSet);
 }
 
 function displayDescription(dayToSet)
 {
+    var descriptionListLength = weatherDescriptionList.length;
+    var randomIndex = Math.floor(Math.random() * descriptionListLength);
+    var weatherDescription = weatherDescriptionList[randomIndex];
+
     if (dayToSet.dayIndex == 0)
     {
-        var date = new Date();
-
-        if (date.isDaytime)
-        {
-            document.getElementById("Description").innerHTML = "It is " + dayToSet.currentTemperature + " degrees with sunny skies. This weather is the greatest!";
-        }
-        else
-        {
-            document.getElementById("Description").innerHTML = "It is " + dayToSet.lowTemperature + " degrees with clear skies. What a tremendous evening!";
-        }
+        document.getElementById("Description").innerHTML = "It is " + dayToSet.currentTemperature + " degrees with " + weatherConditionList[dayToSet.weatherConditionIndex].description + " skies. " + weatherDescription;
     }
     else
     {
@@ -186,35 +175,46 @@ function displayImage(dayToSet)
     {
         var date = new Date();
 
-        if (date.isDaytime)
+        if (dayToSet.weatherConditionIndex == 0)
         {
-            document.getElementById("Image").src = "./img/sun-large.png";
-            document.getElementById("Image").alt = "sun.png";
-            document.body.style.backgroundColor = "lightSteelBlue";
+            if (date.isDaytime)
+            {
+                document.getElementById("Image").src = "./img/sun-large.png";
+                document.body.style.backgroundColor = "lightSteelBlue";
+            }
+            else
+            {
+                document.getElementById("Image").src = "./img/moon-large.png";
+                document.body.style.backgroundColor = "SteelBlue";
+            }
         }
         else
         {
-            document.getElementById("Image").src = "./img/moon-large.png";
-            document.getElementById("Image").alt = "moon.png";
-            document.body.style.backgroundColor = "SteelBlue";
+            document.getElementById("Image").src = dayToSet.imageBase + "-large.png";
         }
     }
     else
     {
         var htmlId = "Image" + dayToSet.dayIndex;
-        document.getElementById(htmlId).src = "./img/sun-small.png";
-        document.getElementById(htmlId).alt = "sun.png";
+        document.getElementById(htmlId).src = dayToSet.imageBase + "-small.png";
     }
 }
 
 function changeWeather(elementId)
 {
-    alert("Change weather for " + elementId);
+    var index = 0;
 
-    //var dayToSet = dayList.
+    if (elementId != "Image")
+    {
+        var length = elementId.length;
+
+        var index = elementId.substring(length - 1, length);
+    }
+
+    var dayToChange = dayList[index];
 
     var weatherConditionCount = weatherConditionList.length - 1;
-    var currentConditionIndex = dayToSet.weatherConditionIndex;
+    var currentConditionIndex = dayToChange.weatherConditionIndex;
     var newConditionIndex = 0;
 
     if ((currentConditionIndex + 1) <= weatherConditionCount)
@@ -224,9 +224,11 @@ function changeWeather(elementId)
 
     var newCondition = weatherConditionList[newConditionIndex];
 
-    dayToSet.weatherConditionIndex = newConditionIndex;
-    dayToSet.currentTemperature = idealTemp + newCondition.temperatureOffset;
-    dayToSet.highTemperature = dayToSet.currentTemperature + highAdjustment;
-    dayToSet.lowTemperature = dayToSet.currentTemperature + lowAdjustment;
-    dayToSet.imageBase = newCondition.imageBase;
+    dayToChange.weatherConditionIndex = newConditionIndex;
+    dayToChange.currentTemperature = idealTemp + newCondition.temperatureOffset;
+    dayToChange.highTemperature = dayToChange.currentTemperature + highAdjustment;
+    dayToChange.lowTemperature = dayToChange.currentTemperature + lowAdjustment;
+    dayToChange.imageBase = newCondition.imageBase;
+
+    displayAll(dayToChange);
 }
