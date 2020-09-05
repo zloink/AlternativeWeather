@@ -1,278 +1,234 @@
 Date.prototype.addDays = function(days)
 {
-    var date = new Date(this.valueOf());
+    var date = new Date();
     date.setDate(date.getDate() + days);
     return date;
+
+    //return this.setDate(this.getDate() + days);
 }
 
-function getDayMonth(date)
-{
-	return (date.getMonth() + 1) + "/" + date.getDate();
-}
-
-function getIdealTemperature()
-{
-    return 75;
-}
-
-function setMainTemperature(temp)
-{
-	document.getElementById("Temperature").innerHTML= temp + "&deg";
-}
-
-function adjustMainTemperature(tempAdjustment)
-{
-    var currentTempString = document.getElementById("Temperature").innerHTML;
-    var currentTemp = parseInt(currentTempString.substring(0, 2));
-
-    var newTemp = currentTemp + tempAdjustment;
-
-    document.getElementById("Temperature").innerHTML = newTemp + "&deg";
-    updateDescription(newTemp);
-}
-
-function adjustDailyTemperature(day, tempAdjustment)
-{
-    var currentHigh = document.getElementById("High" + day).innerHTML;
-
-    var newHigh = parseInt(currentHigh.substr(6,7)) + tempAdjustment;
-    var newLow = getMinimumTemperature(newHigh);
-
-    document.getElementById("High" + day).innerHTML = "High: " + newHigh + "&deg";
-    document.getElementById("Low" + day).innerHTML = "Low: " + newLow + "&deg";
-
-}
-
-function getMaximumTemperature(idealTemperature)
-{   
-    return idealTemperature + 3;
-}
-
-function getMinimumTemperature(maxTemp)
-{
-	return maxTemp - 10;
-}
-
-function updateDescription(temp)
+Date.prototype.isDaytime = function()
 {
     var date = new Date();
     var hour = date.getHours();
-    var weatherCondition = "clear";
 
-    var imageDescription = document.getElementById("Image").alt;
-
-    if (imageDescription == "rain.png")
+    if (hour < 7 || hour > 19)
     {
-        weatherCondition = "rainy";
-    }
-    if (imageDescription == "snow.png")
-    {
-        weatherCondition = "snowy";
+        return false;
     }
 
-    var dayTime = "day";
+    return true;
+}
 
-    if (hour < 7 || hour > 20)
+class Day
+{
+    constructor(index)
     {
-        dayTime = "night";
+        var date = new Date();
+
+        this.dayIndex = index;
+        this.dateString = date.addDays(this.dayIndex);
+        this.monthDayDescription = getDayMonth (this.dateString, this.dayIndex);
+        this.currentTemperature = idealTemp;
+        this.lowTemperature = this.currentTemperature + lowAdjustment;
+        this.highTemperature = this.currentTemperature + highAdjustment;
+        this.weatherConditionIndex = 0;
+        this.imageBase = "./img/sun";
+    }
+}
+
+class WeatherCondition
+{
+    constructor(desc, image, tempOffset)
+    {
+        this.description = desc;
+        this.imageBase = image;
+        this.temperatureOffset = tempOffset;
+    }
+}
+
+var idealTemp = 75;
+var highAdjustment = 3;
+var lowAdjustment = -10;
+//var rainAdjustment = -10;
+//var snowAdjustment = -45;
+
+var dayList =
+[
+    day0 = new Day (0),
+    day1 = new Day (1),
+    day2 = new Day (2),
+    day3 = new Day (3),
+    day4 = new Day (4),
+    day5 = new Day (5),
+    day6 = new Day (6),
+    day7 = new Day (7)
+];
+
+var weatherConditionList =
+[
+    clear = new WeatherCondition ("clear", "./img/sun", 0),
+    rain = new WeatherCondition ("rainy", "./img/rain", -10),
+    snow = new WeatherCondition ("snowy", "./img/snow", -45)
+];
+
+var weatherDescriptionList =
+[
+    "This weather is the greatest!",
+    "This weather is tremendous!",
+    "Believe me, this weather is going to be fabulous!",
+    "You can't get anything better than this weather!",
+    "Let's make weather great again!",
+    "I understand weather better than anybody, and let me tell you, this weather is the greatest!",
+    "This weather is phenomenal. I mean, just phenomenal!",
+    "Is the weather great here? Yes, of course it is. You're welcome!",
+    "You wouldn't believe this weather!",
+    "That other weather site you visit is FAKE WEATHER!",
+    "This weather is huge!",
+    "I've studied weather better than anybody. This is the best weather!"
+];
+
+function getDayMonth (date)
+{
+    var dayNum = date.getDay();
+    var dayName;
+    var month = date.getMonth() + 1;
+    var dayOfMonth = date.getDate();
+
+    switch (dayNum)
+    {
+        case 1:
+            dayName = "Monday ";
+            break;
+        case 2:
+            dayName = "Tuesday ";
+            break;
+        case 3:
+            dayName = "Wednesday ";
+            break;
+        case 4:
+            dayName = "Thursday ";
+            break;
+        case 5:
+            dayName = "Friday ";
+            break;
+        case 6:
+            dayName = "Saturday ";
+            break;
+        default:
+            dayName = " Sunday ";
     }
 
-    document.getElementById("Description").innerHTML="It is " + temp + " degrees with " + weatherCondition + " skies. Believe me, this weather is incredible!";
+    return dayName + month + "/" + dayOfMonth;
 }
 
 function loadIndex()
 {
-    var date = new Date();
-    var hour = date.getHours();
-	var day = date.getDay();
-	
-	var idealTemp = getIdealTemperature();
-	var maxTemp = getMaximumTemperature(idealTemp);
-	var minTemp = getMinimumTemperature(maxTemp);
-
-    resetMainDisplay();
-	
-	switch(day) {
-	case 1:
-        document.getElementById("Day1").innerHTML="Tuesday " + getDayMonth(date.addDays(1));
-        document.getElementById("Day2").innerHTML="Wednesday " + getDayMonth(date.addDays(2));
-        document.getElementById("Day3").innerHTML="Thursday " + getDayMonth(date.addDays(3));
-        document.getElementById("Day4").innerHTML="Friday " + getDayMonth(date.addDays(4));
-        document.getElementById("Day5").innerHTML="Saturday " + getDayMonth(date.addDays(5));
-        document.getElementById("Day6").innerHTML="Sunday " + getDayMonth(date.addDays(6));
-        document.getElementById("Day7").innerHTML="Monday " + getDayMonth(date.addDays(7));
-        break;
-    case 2:
-        document.getElementById("Day7").innerHTML="Tuesday " + getDayMonth(date.addDays(7));
-        document.getElementById("Day1").innerHTML="Wednesday " + getDayMonth(date.addDays(1));
-        document.getElementById("Day2").innerHTML="Thursday " + getDayMonth(date.addDays(2));
-        document.getElementById("Day3").innerHTML="Friday " + getDayMonth(date.addDays(3));
-        document.getElementById("Day4").innerHTML="Saturday " + getDayMonth(date.addDays(4));
-        document.getElementById("Day5").innerHTML="Sunday " + getDayMonth(date.addDays(5));
-        document.getElementById("Day6").innerHTML="Monday " + getDayMonth(date.addDays(6));
-        break;
-    case 3:
-        document.getElementById("Day6").innerHTML="Tuesday " + getDayMonth(date.addDays(6));
-        document.getElementById("Day7").innerHTML="Wednesday " + getDayMonth(date.addDays(7));
-        document.getElementById("Day1").innerHTML="Thursday " + getDayMonth(date.addDays(1));
-        document.getElementById("Day2").innerHTML="Friday " + getDayMonth(date.addDays(2));
-        document.getElementById("Day3").innerHTML="Saturday " + getDayMonth(date.addDays(3));
-        document.getElementById("Day4").innerHTML="Sunday " + getDayMonth(date.addDays(4));
-        document.getElementById("Day5").innerHTML="Monday " + getDayMonth(date.addDays(5));
-        break;
-    case 4:
-        document.getElementById("Day5").innerHTML="Tuesday " + getDayMonth(date.addDays(5));
-        document.getElementById("Day6").innerHTML="Wednesday " + getDayMonth(date.addDays(6));
-        document.getElementById("Day7").innerHTML="Thursday " + getDayMonth(date.addDays(7));
-        document.getElementById("Day1").innerHTML="Friday " + getDayMonth(date.addDays(1));
-        document.getElementById("Day2").innerHTML="Saturday " + getDayMonth(date.addDays(2));
-        document.getElementById("Day3").innerHTML="Sunday " + getDayMonth(date.addDays(3));
-        document.getElementById("Day4").innerHTML="Monday " + getDayMonth(date.addDays(4));
-        break;
-    case 5:
-        document.getElementById("Day4").innerHTML="Tuesday " + getDayMonth(date.addDays(4));
-        document.getElementById("Day5").innerHTML="Wednesday " + getDayMonth(date.addDays(5));
-        document.getElementById("Day6").innerHTML="Thursday " + getDayMonth(date.addDays(6));
-        document.getElementById("Day7").innerHTML="Friday " + getDayMonth(date.addDays(7));
-        document.getElementById("Day1").innerHTML="Saturday " + getDayMonth(date.addDays(1));
-        document.getElementById("Day2").innerHTML="Sunday " + getDayMonth(date.addDays(2));
-        document.getElementById("Day3").innerHTML="Monday " + getDayMonth(date.addDays(3));
-        break;
-    case 6:
-        document.getElementById("Day3").innerHTML="Tuesday " + getDayMonth(date.addDays(3));
-        document.getElementById("Day4").innerHTML="Wednesday " + getDayMonth(date.addDays(4));
-        document.getElementById("Day5").innerHTML="Thursday " + getDayMonth(date.addDays(5));
-        document.getElementById("Day6").innerHTML="Friday " + getDayMonth(date.addDays(6));
-        document.getElementById("Day7").innerHTML="Saturday " + getDayMonth(date.addDays(7));
-        document.getElementById("Day1").innerHTML="Sunday " + getDayMonth(date.addDays(1));
-        document.getElementById("Day2").innerHTML="Monday " + getDayMonth(date.addDays(2));
-        break;
-    default:
-        document.getElementById("Day2").innerHTML="Tuesday " + getDayMonth(date.addDays(2));
-        document.getElementById("Day3").innerHTML="Wednesday " + getDayMonth(date.addDays(3));
-        document.getElementById("Day4").innerHTML="Thursday " + getDayMonth(date.addDays(4));
-        document.getElementById("Day5").innerHTML="Friday " + getDayMonth(date.addDays(5));
-        document.getElementById("Day6").innerHTML="Saturday " + getDayMonth(date.addDays(6));
-        document.getElementById("Day7").innerHTML="Sunday " + getDayMonth(date.addDays(7));
-        document.getElementById("Day1").innerHTML="Monday " + getDayMonth(date.addDays(1));
-    }
-	
-	var high1 = getMaximumTemperature(idealTemp);
-	document.getElementById("High1").innerHTML="High: " + high1 + "&deg";
-	document.getElementById("Low1").innerHTML="Low: " + getMinimumTemperature(high1) + "&deg";
-	
-	var high2 = getMaximumTemperature(idealTemp);
-	document.getElementById("High2").innerHTML="High: " + high2 + "&deg";
-	document.getElementById("Low2").innerHTML="Low: " + getMinimumTemperature(high2) + "&deg";
-	
-	var high3 = getMaximumTemperature(idealTemp);
-	document.getElementById("High3").innerHTML="High: " + high3 + "&deg";
-	document.getElementById("Low3").innerHTML="Low: " + getMinimumTemperature(high3) + "&deg";
-	
-	var high4 = getMaximumTemperature(idealTemp);
-	document.getElementById("High4").innerHTML="High: " + high4 + "&deg";
-	document.getElementById("Low4").innerHTML="Low: " + getMinimumTemperature(high4) + "&deg";
-	
-	var high5 = getMaximumTemperature(idealTemp);
-	document.getElementById("High5").innerHTML="High: " + high5 + "&deg";
-	document.getElementById("Low5").innerHTML="Low: " + getMinimumTemperature(high5) + "&deg";
-	
-	var high6 = getMaximumTemperature(idealTemp);
-	document.getElementById("High6").innerHTML="High: " + high6 + "&deg";
-	document.getElementById("Low6").innerHTML="Low: " + getMinimumTemperature(high6) + "&deg";
-
-	var high7 = getMaximumTemperature(idealTemp);
-	document.getElementById("High7").innerHTML="High: " + high7 + "&deg";
-	document.getElementById("Low7").innerHTML="Low: " + getMinimumTemperature(high7) + "&deg";
+    dayList.forEach(displayAll);
 }
 
-function resetMainDisplay()
+function displayAll(dayToSet)
 {
-    var date = new Date();
-    var hour = date.getHours();
+    displayImage(dayToSet);
+    displayTemperatures(dayToSet);
+    displayDescription(dayToSet);
+}
 
-    var idealTemp = getIdealTemperature();
-	var maxTemp = getMaximumTemperature(idealTemp);
-	var minTemp = getMinimumTemperature(maxTemp);
+function displayDescription(dayToSet)
+{
+    var descriptionListLength = weatherDescriptionList.length;
+    var randomIndex = Math.floor(Math.random() * descriptionListLength);
+    var weatherDescription = weatherDescriptionList[randomIndex];
 
-    if(hour < 7 || hour > 20)
-	{
-		document.getElementById("Description").innerHTML="It is " + minTemp + " degrees with clear skies. What a tremendous evening!";
-		setMainTemperature(minTemp);
-		document.getElementById("Image").src = "./img/moon-large.png";
-        document.getElementById("Image").alt = "moon.png";
-        document.body.style.backgroundColor = "SteelBlue";
-	}
-	else
-	{
-		document.getElementById("Description").innerHTML="It is " + maxTemp + " degrees with sunny skies. This weather is the greatest!";
-		setMainTemperature(maxTemp);
-		document.getElementById("Image").src = "./img/sun-large.png";
-        document.getElementById("Image").alt = "sun.png";
-        document.body.style.backgroundColor = "lightSteelBlue";
-	}
+    if (dayToSet.dayIndex == 0)
+    {
+        document.getElementById("Description").innerHTML = "It is " + dayToSet.currentTemperature + " degrees with " + weatherConditionList[dayToSet.weatherConditionIndex].description + " skies. " + weatherDescription;
+    }
+    else
+    {
+        var monthDay = "MonthDay" + dayToSet.dayIndex;
+        var monthDayDescription = dayToSet.monthDayDescription;
+
+        document.getElementById(monthDay).innerHTML = monthDayDescription;
+    }
+}
+
+function displayTemperatures(dayToSet)
+{
+    if (dayToSet.dayIndex == 0)
+    {
+        document.getElementById("Temperature").innerHTML = dayToSet.currentTemperature + "&deg";
+    }
+    else
+    {
+        var highHtmlId = "High" + dayToSet.dayIndex;
+        var lowHtmlId = "Low" + dayToSet.dayIndex;
+
+        document.getElementById(highHtmlId).innerHTML = "High: " + dayToSet.highTemperature + "&deg";
+        document.getElementById(lowHtmlId).innerHTML = "Low: " + dayToSet.lowTemperature + "&deg"; 
+    }
+}
+
+function displayImage(dayToSet)
+{
+    if (dayToSet.dayIndex == 0)
+    {
+        var date = new Date();
+
+        if (dayToSet.weatherConditionIndex == 0)
+        {
+            if (date.isDaytime)
+            {
+                document.getElementById("Image").src = "./img/sun-large.png";
+                document.body.style.backgroundColor = "lightSteelBlue";
+            }
+            else
+            {
+                document.getElementById("Image").src = "./img/moon-large.png";
+                document.body.style.backgroundColor = "SteelBlue";
+            }
+        }
+        else
+        {
+            document.getElementById("Image").src = dayToSet.imageBase + "-large.png";
+        }
+    }
+    else
+    {
+        var htmlId = "Image" + dayToSet.dayIndex;
+        document.getElementById(htmlId).src = dayToSet.imageBase + "-small.png";
+    }
 }
 
 function changeWeather(elementId)
 {
-    var main = false;
-    var suffix = "-small.png";
-    var dayInt = 0;
+    var index = 0;
 
-    if(elementId == "Image")
+    if (elementId != "Image")
     {
-        main = true;
-        suffix = "-large.png";
-    }
-    else
-    {
-        var day = elementId.substring(5, 6);
-        dayInt = parseInt(day);
+        var length = elementId.length;
+
+        var index = elementId.substring(length - 1, length);
     }
 
-    var imageDescription = document.getElementById(elementId).alt;
+    var dayToChange = dayList[index];
 
-    if (imageDescription == "sun.png" || imageDescription == "moon.png")
+    var weatherConditionCount = weatherConditionList.length - 1;
+    var currentConditionIndex = dayToChange.weatherConditionIndex;
+    var newConditionIndex = 0;
+
+    if ((currentConditionIndex + 1) <= weatherConditionCount)
     {
-        document.getElementById(elementId).src = "./img/rain" + suffix;
-        document.getElementById(elementId).alt = "rain.png";
-
-        if(main)
-        {
-            adjustMainTemperature(-10);
-        }
-        else
-        {
-            adjustDailyTemperature(dayInt, -10);
-        }
+        newConditionIndex = currentConditionIndex + 1;
     }
 
-    if (imageDescription == "rain.png")
-    {
-        document.getElementById(elementId).src = "./img/snow" + suffix;
-        document.getElementById(elementId).alt = "snow.png";
+    var newCondition = weatherConditionList[newConditionIndex];
 
-        if(main)
-        {
-            adjustMainTemperature(-38);
-        }
-        else
-        {
-            adjustDailyTemperature(dayInt, -38);
-        }
-    }
+    dayToChange.weatherConditionIndex = newConditionIndex;
+    dayToChange.currentTemperature = idealTemp + newCondition.temperatureOffset;
+    dayToChange.highTemperature = dayToChange.currentTemperature + highAdjustment;
+    dayToChange.lowTemperature = dayToChange.currentTemperature + lowAdjustment;
+    dayToChange.imageBase = newCondition.imageBase;
 
-    if (imageDescription == "snow.png")
-    {
-        if (main)
-        {
-            resetMainDisplay();
-        }
-        else
-        {
-            document.getElementById(elementId).src = "./img/sun" + suffix;
-            document.getElementById(elementId).alt = "sun.png";
-            adjustDailyTemperature(dayInt, +48);
-        }
-    }
+    displayAll(dayToChange);
 }
