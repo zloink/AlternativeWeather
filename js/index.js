@@ -462,6 +462,8 @@ async function getWeatherData(lat, lon) {
 function displayRealWeather() {
     if (!realWeatherData) return;
     
+    console.log('Full weather data received:', realWeatherData);
+    
     // Show reset button
     document.getElementById('resetButton').style.display = 'inline-block';
     
@@ -469,6 +471,12 @@ function displayRealWeather() {
     const currentWeather = realWeatherData.list[0];
     const currentTemp = Math.round(currentWeather.main.temp);
     const weatherMain = currentWeather.weather[0].main.toLowerCase();
+    
+    console.log('Current weather:', {
+        temp: currentTemp,
+        weather: weatherMain,
+        location: currentLocation
+    });
     
     // Update temperature display
     document.getElementById('Temperature').innerHTML = currentTemp + '&deg';
@@ -506,29 +514,74 @@ function updateWeatherImage(weatherType, dayIndex) {
 function updateForecast() {
     if (!realWeatherData) return;
     
-    // Group forecast data by day (every 8th item = 24 hours)
-    const dailyData = [];
-    for (let i = 0; i < realWeatherData.list.length; i += 8) {
-        if (dailyData.length < 7) {
-            dailyData.push(realWeatherData.list[i]);
+    console.log('Raw forecast data:', realWeatherData.list);
+    
+    // Group forecast data by actual calendar days
+    const dailyForecasts = {};
+    
+    realWeatherData.list.forEach(forecast => {
+        const date = new Date(forecast.dt * 1000); // Convert timestamp to Date
+        const dayKey = date.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+        
+        if (!dailyForecasts[dayKey]) {
+            dailyForecasts[dayKey] = {
+                temps: [],
+                weather: [],
+                date: date
+            };
+        }
+        
+        dailyForecasts[dayKey].temps.push(forecast.main.temp);
+        dailyForecasts[dayKey].weather.push(forecast.weather[0].main);
+    });
+    
+    console.log('Daily forecasts grouped:', dailyForecasts);
+    
+    // Get the next 7 days (excluding today)
+    const today = new Date();
+    const next7Days = [];
+    
+    for (let i = 1; i <= 7; i++) {
+        const futureDate = new Date(today);
+        futureDate.setDate(today.getDate() + i);
+        const dayKey = futureDate.toISOString().split('T')[0];
+        
+        if (dailyForecasts[dayKey]) {
+            next7Days.push({
+                dayIndex: i,
+                data: dailyForecasts[dayKey]
+            });
         }
     }
     
-    // Update each day
-    dailyData.forEach((dayData, index) => {
-        if (index === 0) return; // Skip today (index 0)
+    console.log('Next 7 days to display:', next7Days);
+    
+    // Update each day's forecast
+    next7Days.forEach(day => {
+        const dayIndex = day.dayIndex;
+        const dayData = day.data;
         
-        const dayIndex = index;
-        const highTemp = Math.round(dayData.main.temp_max);
-        const lowTemp = Math.round(dayData.main.temp_min);
-        const weatherMain = dayData.weather[0].main.toLowerCase();
+        // Calculate daily high/low from all temperature readings
+        const highTemp = Math.round(Math.max(...dayData.temps));
+        const lowTemp = Math.round(Math.min(...dayData.temps));
+        
+        // Get most common weather condition for the day
+        const weatherCounts = {};
+        dayData.weather.forEach(weather => {
+            weatherCounts[weather] = (weatherCounts[weather] || 0) + 1;
+        });
+        const mostCommonWeather = Object.keys(weatherCounts).reduce((a, b) => 
+            weatherCounts[a] > weatherCounts[b] ? a : b
+        );
+        
+        console.log(`Day ${dayIndex}: High=${highTemp}, Low=${lowTemp}, Weather=${mostCommonWeather}`);
         
         // Update temperatures
         document.getElementById(`High${dayIndex}`).innerHTML = `High: ${highTemp}&deg`;
         document.getElementById(`Low${dayIndex}`).innerHTML = `Low: ${lowTemp}&deg`;
         
         // Update weather image
-        updateWeatherImage(weatherMain, dayIndex);
+        updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
     });
 }
 
