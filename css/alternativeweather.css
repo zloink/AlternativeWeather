@@ -49,47 +49,6 @@ body {
     min-height: 20px;
 }
 
-.api-key-section {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.api-key-section input[type="password"] {
-    padding: 10px 14px;
-    font-size: 14px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    min-width: 300px;
-    font-family: tahoma;
-    margin-right: 10px;
-}
-
-.api-key-section button {
-    padding: 10px 20px;
-    font-size: 14px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: tahoma;
-    transition: background-color 0.3s;
-}
-
-.api-key-section button:hover {
-    background-color: #0056b3;
-}
-
-#apiKeyStatus {
-    margin-top: 10px;
-    font-family: tahoma;
-    font-size: 12px;
-    min-height: 16px;
-}
-
 h1 {
     font-family:tahoma;
     font-size: 60px;

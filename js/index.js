@@ -1,5 +1,5 @@
 // OpenWeatherMap API Configuration
-let WEATHER_API_KEY = ''; // Will be set by user input
+const WEATHER_API_KEY = config.WEATHER_API_KEY; // Get from config file
 const WEATHER_API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 const GEOCODING_API_BASE_URL = 'https://api.openweathermap.org/geo/1.0';
 
@@ -272,7 +272,7 @@ async function searchWeather(event) {
     event.preventDefault();
     
     // Check if API key is set
-    if (!checkAPIKey()) {
+    if (!validateAPIKey()) {
         return;
     }
     
@@ -543,31 +543,10 @@ function resetToFakeWeather() {
     loadIndex(); // Reload fake weather
 }
 
-// API Key Management
-function setAPIKey() {
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const apiKeyStatus = document.getElementById('apiKeyStatus');
-    const key = apiKeyInput.value.trim();
-    
-    if (!key) {
-        apiKeyStatus.innerHTML = 'Please enter an API key.';
-        apiKeyStatus.style.color = '#dc3545';
-        return;
-    }
-    
-    // Store the API key in memory (not localStorage for security)
-    WEATHER_API_KEY = key;
-    apiKeyInput.value = ''; // Clear the input for security
-    apiKeyStatus.innerHTML = 'API key set successfully! You can now search for weather.';
-    apiKeyStatus.style.color = '#28a745';
-    
-    // Enable the weather search form
-    document.getElementById('locationForm').style.opacity = '1';
-}
-
-function checkAPIKey() {
-    if (!WEATHER_API_KEY) {
-        document.getElementById('searchStatus').innerHTML = 'Please set your API key first.';
+// API Key Validation
+function validateAPIKey() {
+    if (!WEATHER_API_KEY || WEATHER_API_KEY === 'YOUR_API_KEY_HERE') {
+        console.error('API key not configured. Please create config.js with your OpenWeatherMap API key.');
         return false;
     }
     return true;

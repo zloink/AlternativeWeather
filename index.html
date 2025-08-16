@@ -6,14 +6,10 @@
 </head>
 <body onload="loadIndex()">
 
+<script type="text/javascript" src="./config.js"></script>
 <script type="text/javascript" src="./js/index.js"></script>
 
 <div class="search-container">
-    <div class="api-key-section">
-        <input type="password" id="apiKeyInput" placeholder="Enter your OpenWeatherMap API key..." required>
-        <button type="button" onclick="setAPIKey()">Set API Key</button>
-        <div id="apiKeyStatus"></div>
-    </div>
     <form id="locationForm" onsubmit="searchWeather(event)">
         <input type="text" id="locationInput" placeholder="Enter ZIP code or city name..." required>
         <button type="submit">Get Real Weather</button>
