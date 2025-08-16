@@ -387,6 +387,7 @@ function updateForecast() {
     if (!realWeatherData) return;
     
     console.log('Raw forecast data:', realWeatherData.list);
+    console.log('Number of forecast entries:', realWeatherData.list.length);
     
     // Group forecast data by actual calendar days
     const dailyForecasts = {};
@@ -408,10 +409,11 @@ function updateForecast() {
     });
     
     console.log('Daily forecasts grouped:', dailyForecasts);
+    console.log('Available forecast days:', Object.keys(dailyForecasts));
     
-    // Get the next 7 days (excluding today)
+    // Get the next available days (OpenWeatherMap provides 5 days max)
     const today = new Date();
-    const next7Days = [];
+    const availableDays = [];
     
     for (let i = 1; i <= 7; i++) {
         const futureDate = new Date(today);
@@ -419,58 +421,59 @@ function updateForecast() {
         const dayKey = futureDate.toISOString().split('T')[0];
         
         if (dailyForecasts[dayKey]) {
-            next7Days.push({
+            availableDays.push({
                 dayIndex: i,
                 data: dailyForecasts[dayKey]
             });
         } else {
-            // If no data for this day, create a placeholder
-            console.warn(`No forecast data for ${dayKey}, creating placeholder`);
-            next7Days.push({
-                dayIndex: i,
-                data: null
-            });
+            // If no data for this day, stop here (we've reached the API limit)
+            console.log(`No forecast data for ${dayKey}, reached API limit at day ${i-1}`);
+            break;
         }
     }
     
-    console.log('Next 7 days to display:', next7Days);
+    console.log('Available days to display:', availableDays);
     
-    // Update each day's forecast
-    next7Days.forEach(day => {
+    // Update the forecast header to reflect actual available days
+    const availableDayCount = availableDays.length;
+    if (availableDayCount < 7) {
+        document.querySelector('h2').innerHTML = `${availableDayCount}-day forecast`;
+    }
+    
+    // Update each available day's forecast
+    availableDays.forEach(day => {
         const dayIndex = day.dayIndex;
+        const dayData = day.data;
         
-        if (day.data) {
-            const dayData = day.data;
-            
-            // Calculate daily high/low from all temperature readings
-            const highTemp = Math.round(Math.max(...dayData.temps));
-            const lowTemp = Math.round(Math.min(...dayData.temps));
-            
-            // Get most common weather condition for the day
-            const weatherCounts = {};
-            dayData.weather.forEach(weather => {
-                weatherCounts[weather] = (weatherCounts[weather] || 0) + 1;
-            });
-            const mostCommonWeather = Object.keys(weatherCounts).reduce((a, b) => 
-                weatherCounts[a] > weatherCounts[b] ? a : b
-            );
-            
-            console.log(`Day ${dayIndex}: High=${highTemp}, Low=${lowTemp}, Weather=${mostCommonWeather}`);
-            
-            // Update temperatures
-            document.getElementById(`High${dayIndex}`).innerHTML = `High: ${highTemp}&deg`;
-            document.getElementById(`Low${dayIndex}`).innerHTML = `Low: ${lowTemp}&deg`;
-            
-            // Update weather image
-            updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
-        } else {
-            // Handle missing data
-            console.log(`Day ${dayIndex}: No data available`);
-            document.getElementById(`High${dayIndex}`).innerHTML = `High: --&deg`;
-            document.getElementById(`Low${dayIndex}`).innerHTML = `Low: --&deg`;
-            // Keep default weather icon
-        }
+        // Calculate daily high/low from all temperature readings
+        const highTemp = Math.round(Math.max(...dayData.temps));
+        const lowTemp = Math.round(Math.min(...dayData.temps));
+        
+        // Get most common weather condition for the day
+        const weatherCounts = {};
+        dayData.weather.forEach(weather => {
+            weatherCounts[weather] = (weatherCounts[weather] || 0) + 1;
+        });
+        const mostCommonWeather = Object.keys(weatherCounts).reduce((a, b) => 
+            weatherCounts[a] > weatherCounts[b] ? a : b
+        );
+        
+        console.log(`Day ${dayIndex}: High=${highTemp}, Low=${lowTemp}, Weather=${mostCommonWeather}`);
+        
+        // Update temperatures
+        document.getElementById(`High${dayIndex}`).innerHTML = `High: ${highTemp}&deg`;
+        document.getElementById(`Low${dayIndex}`).innerHTML = `Low: ${lowTemp}&deg`;
+        
+        // Update weather image
+        updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
     });
+    
+    // Clear any remaining days that don't have data
+    for (let i = availableDayCount + 1; i <= 7; i++) {
+        document.getElementById(`High${i}`).innerHTML = `High: --&deg`;
+        document.getElementById(`Low${i}`).innerHTML = `Low: --&deg`;
+        // Keep default weather icon
+    }
 }
 
 // API Key Validation

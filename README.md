@@ -7,7 +7,7 @@ A clean, functional weather application that provides real-time weather data and
 - **Real Weather Data**: Get actual weather information for any US ZIP code or city using OpenWeatherMap API
 - **Location Memory**: Automatically remembers your last searched location
 - **URL Sharing**: Share weather for specific ZIP codes via URL parameters (e.g., ?zip=23117)
-- **7-Day Forecast**: View detailed weather forecasts with accurate daily temperature ranges
+- **5-Day Forecast**: View detailed weather forecasts with accurate daily temperature ranges
 - **Mobile Responsive**: Optimized design that works great on all devices
 - **Clean Interface**: Modern, user-friendly design focused on functionality
 
@@ -81,5 +81,6 @@ WeatherApp/
 
 - The free OpenWeatherMap API has rate limits (1000 calls/day)
 - Weather data is updated every 3 hours
+- **Forecast limitation**: Free API provides 5-day forecasts (not 7-day)
 - Last location is saved locally in your browser
 - URLs can be shared to show specific ZIP code weather 
