@@ -6,13 +6,13 @@ const GEOCODING_API_BASE_URL = 'https://api.openweathermap.org/geo/1.0';
 // Weather data storage
 let realWeatherData = null;
 let currentLocation = '';
-let savedLocations = [];
+let lastLocation = '';
 
 // Update day headers in forecast table
 function updateDayHeaders() {
     const today = new Date();
     
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 5; i++) {
         const futureDate = new Date(today);
         futureDate.setDate(today.getDate() + i);
         
@@ -26,85 +26,40 @@ function updateDayHeaders() {
 
 // Initialize the app
 function loadIndex() {
-    loadSavedLocations();
+    loadLastLocation();
     checkURLForLocation();
     updateDayHeaders();
 }
 
-// Load saved locations from localStorage
-function loadSavedLocations() {
-    const saved = localStorage.getItem('weatherLocations');
+// Load last used location from localStorage
+function loadLastLocation() {
+    const saved = localStorage.getItem('lastWeatherLocation');
     if (saved) {
-        savedLocations = JSON.parse(saved);
-        displaySavedLocations();
+        lastLocation = saved;
+        // Don't auto-load, just remember it
     }
 }
 
-// Save locations to localStorage
-function saveLocations() {
-    localStorage.setItem('weatherLocations', JSON.stringify(savedLocations));
+// Save location to localStorage (silent, no UI)
+function saveLocation(location) {
+    localStorage.setItem('lastWeatherLocation', location);
+    lastLocation = location;
 }
 
-// Display saved locations
-function displaySavedLocations() {
-    const container = document.getElementById('savedLocations');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    if (savedLocations.length === 0) {
-        container.innerHTML = '<p class="no-locations">No saved locations yet. Search for a location to get started!</p>';
-        return;
-    }
-    
-    savedLocations.forEach((location, index) => {
-        const locationDiv = document.createElement('div');
-        locationDiv.className = 'saved-location';
-        locationDiv.innerHTML = `
-            <span class="location-name">${location.name}</span>
-            <button onclick="loadLocation('${location.name}')" class="load-btn">Load</button>
-            <button onclick="removeLocation(${index})" class="remove-btn">×</button>
-        `;
-        container.appendChild(locationDiv);
-    });
-}
-
-// Add location to saved list
-function addLocationToSaved(locationName) {
-    if (!savedLocations.find(loc => loc.name === locationName)) {
-        savedLocations.push({ name: locationName, timestamp: Date.now() });
-        saveLocations();
-        displaySavedLocations();
-    }
-}
-
-// Remove location from saved list
-function removeLocation(index) {
-    savedLocations.splice(index, 1);
-    saveLocations();
-    displaySavedLocations();
-}
-
-// Load a saved location
-function loadLocation(locationName) {
-    document.getElementById('locationInput').value = locationName;
-    searchWeather(new Event('submit'));
-}
-
-// Check URL for location parameter
+// Check URL for ZIP code parameter
 function checkURLForLocation() {
     const urlParams = new URLSearchParams(window.location.search);
-    const location = urlParams.get('location');
-    if (location) {
-        document.getElementById('locationInput').value = location;
+    const zipCode = urlParams.get('zip');
+    if (zipCode) {
+        document.getElementById('locationInput').value = zipCode;
         searchWeather(new Event('submit'));
     }
 }
 
-// Update URL with current location
-function updateURL(location) {
+// Update URL with current ZIP code
+function updateURL(zipCode) {
     const url = new URL(window.location);
-    url.searchParams.set('location', location);
+    url.searchParams.set('zip', zipCode);
     window.history.pushState({}, '', url);
 }
 
@@ -250,8 +205,8 @@ async function searchWeather(event) {
             currentLocation = locationParts.join(', ');
             displayRealWeather();
             searchStatus.innerHTML = `Weather data loaded for ${currentLocation}!`;
-            addLocationToSaved(currentLocation); // Save the location
-            updateURL(currentLocation); // Update URL with current location
+            saveLocation(currentLocation); // Save the location
+            updateURL(input); // Update URL with current location
         } else {
             searchStatus.innerHTML = 'Failed to load weather data. Please try again.';
         }
@@ -432,6 +387,7 @@ function updateForecast() {
     if (!realWeatherData) return;
     
     console.log('Raw forecast data:', realWeatherData.list);
+    console.log('Number of forecast entries:', realWeatherData.list.length);
     
     // Group forecast data by actual calendar days
     const dailyForecasts = {};
@@ -453,28 +409,33 @@ function updateForecast() {
     });
     
     console.log('Daily forecasts grouped:', dailyForecasts);
+    console.log('Available forecast days:', Object.keys(dailyForecasts));
     
-    // Get the next 7 days (excluding today)
+    // Get the next 5 days (excluding today) - OpenWeatherMap provides 5 days max
     const today = new Date();
-    const next7Days = [];
+    const availableDays = [];
     
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 5; i++) {
         const futureDate = new Date(today);
         futureDate.setDate(today.getDate() + i);
         const dayKey = futureDate.toISOString().split('T')[0];
         
         if (dailyForecasts[dayKey]) {
-            next7Days.push({
+            availableDays.push({
                 dayIndex: i,
                 data: dailyForecasts[dayKey]
             });
+        } else {
+            // If no data for this day, stop here (we've reached the API limit)
+            console.log(`No forecast data for ${dayKey}, reached API limit at day ${i-1}`);
+            break;
         }
     }
     
-    console.log('Next 7 days to display:', next7Days);
+    console.log('Available days to display:', availableDays);
     
-    // Update each day's forecast
-    next7Days.forEach(day => {
+    // Update each available day's forecast
+    availableDays.forEach(day => {
         const dayIndex = day.dayIndex;
         const dayData = day.data;
         
