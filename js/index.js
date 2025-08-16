@@ -6,6 +6,107 @@ const GEOCODING_API_BASE_URL = 'https://api.openweathermap.org/geo/1.0';
 // Weather data storage
 let realWeatherData = null;
 let currentLocation = '';
+let savedLocations = [];
+
+// Update day headers in forecast table
+function updateDayHeaders() {
+    const today = new Date();
+    
+    for (let i = 1; i <= 7; i++) {
+        const futureDate = new Date(today);
+        futureDate.setDate(today.getDate() + i);
+        
+        const dayName = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
+        const month = futureDate.getMonth() + 1;
+        const day = futureDate.getDate();
+        
+        document.getElementById(`MonthDay${i}`).innerHTML = `${dayName} ${month}/${day}`;
+    }
+}
+
+// Initialize the app
+function loadIndex() {
+    loadSavedLocations();
+    checkURLForLocation();
+    updateDayHeaders();
+}
+
+// Load saved locations from localStorage
+function loadSavedLocations() {
+    const saved = localStorage.getItem('weatherLocations');
+    if (saved) {
+        savedLocations = JSON.parse(saved);
+        displaySavedLocations();
+    }
+}
+
+// Save locations to localStorage
+function saveLocations() {
+    localStorage.setItem('weatherLocations', JSON.stringify(savedLocations));
+}
+
+// Display saved locations
+function displaySavedLocations() {
+    const container = document.getElementById('savedLocations');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (savedLocations.length === 0) {
+        container.innerHTML = '<p class="no-locations">No saved locations yet. Search for a location to get started!</p>';
+        return;
+    }
+    
+    savedLocations.forEach((location, index) => {
+        const locationDiv = document.createElement('div');
+        locationDiv.className = 'saved-location';
+        locationDiv.innerHTML = `
+            <span class="location-name">${location.name}</span>
+            <button onclick="loadLocation('${location.name}')" class="load-btn">Load</button>
+            <button onclick="removeLocation(${index})" class="remove-btn">×</button>
+        `;
+        container.appendChild(locationDiv);
+    });
+}
+
+// Add location to saved list
+function addLocationToSaved(locationName) {
+    if (!savedLocations.find(loc => loc.name === locationName)) {
+        savedLocations.push({ name: locationName, timestamp: Date.now() });
+        saveLocations();
+        displaySavedLocations();
+    }
+}
+
+// Remove location from saved list
+function removeLocation(index) {
+    savedLocations.splice(index, 1);
+    saveLocations();
+    displaySavedLocations();
+}
+
+// Load a saved location
+function loadLocation(locationName) {
+    document.getElementById('locationInput').value = locationName;
+    searchWeather(new Event('submit'));
+}
+
+// Check URL for location parameter
+function checkURLForLocation() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const location = urlParams.get('location');
+    if (location) {
+        document.getElementById('locationInput').value = location;
+        searchWeather(new Event('submit'));
+    }
+}
+
+// Update URL with current location
+function updateURL(location) {
+    const url = new URL(window.location);
+    url.searchParams.set('location', location);
+    window.history.pushState({}, '', url);
+}
 
 Date.prototype.addDays = function(days)
 {
@@ -29,217 +130,32 @@ Date.prototype.isDaytime = function()
     return true;
 }
 
-class Day
-{
-    constructor(index)
-    {
-        var date = new Date();
+// Remove all the fake weather related functions and variables
+// Keep only the real weather functionality
 
-        this.dayIndex = index;
-        this.dateString = date.addDays(this.dayIndex);
-        this.monthDayDescription = getDayMonth (this.dateString, this.dayIndex);
-        this.currentTemperature = idealTemp;
-        this.lowTemperature = this.currentTemperature + lowAdjustment;
-        this.highTemperature = this.currentTemperature + highAdjustment;
-        this.weatherConditionIndex = 0;
-        this.imageBase = "./img/sun";
-    }
-}
+// Weather condition mapping for icons
+const weatherIconMap = {
+    'clear': './img/sun',
+    'clouds': './img/sun', // Use sun for cloudy (closest match)
+    'rain': './img/rain',
+    'drizzle': './img/rain',
+    'snow': './img/snow',
+    'thunderstorm': './img/rain',
+    'mist': './img/sun',
+    'smoke': './img/sun',
+    'haze': './img/sun',
+    'dust': './img/sun',
+    'fog': './img/sun',
+    'sand': './img/sun',
+    'ash': './img/sun',
+    'squall': './img/rain',
+    'tornado': './img/rain'
+};
 
-class WeatherCondition
-{
-    constructor(desc, image, tempOffset)
-    {
-        this.description = desc;
-        this.imageBase = image;
-        this.temperatureOffset = tempOffset;
-    }
-}
-
-var idealTemp = 75;
-var highAdjustment = 3;
-var lowAdjustment = -10;
-//var rainAdjustment = -10;
-//var snowAdjustment = -45;
-
-var dayList =
-[
-    day0 = new Day (0),
-    day1 = new Day (1),
-    day2 = new Day (2),
-    day3 = new Day (3),
-    day4 = new Day (4),
-    day5 = new Day (5),
-    day6 = new Day (6),
-    day7 = new Day (7)
-];
-
-var weatherConditionList =
-[
-    clear = new WeatherCondition ("clear", "./img/sun", 0),
-    rain = new WeatherCondition ("rainy", "./img/rain", -10),
-    snow = new WeatherCondition ("snowy", "./img/snow", -45)
-];
-
-var weatherDescriptionList =
-[
-    "This weather is the greatest!",
-    "This weather is tremendous!",
-    "Believe me, this weather is going to be fabulous!",
-    "You can't get anything better than this weather!",
-    "Let's make weather great again!",
-    "I understand weather better than anybody, and let me tell you, this weather is the greatest!",
-    "This weather is phenomenal. I mean, just phenomenal!",
-    "Is the weather great here? Yes, of course it is. You're welcome!",
-    "You wouldn't believe this weather!",
-    "That other weather site you visit is FAKE WEATHER!",
-    "This weather is huge!",
-    "I've studied weather better than anybody. This is the best weather!"
-];
-
-function getDayMonth (date)
-{
-    var dayNum = date.getDay();
-    var dayName;
-    var month = date.getMonth() + 1;
-    var dayOfMonth = date.getDate();
-
-    switch (dayNum)
-    {
-        case 1:
-            dayName = "Monday ";
-            break;
-        case 2:
-            dayName = "Tuesday ";
-            break;
-        case 3:
-            dayName = "Wednesday ";
-            break;
-        case 4:
-            dayName = "Thursday ";
-            break;
-        case 5:
-            dayName = "Friday ";
-            break;
-        case 6:
-            dayName = "Saturday ";
-            break;
-        default:
-            dayName = " Sunday ";
-    }
-
-    return dayName + month + "/" + dayOfMonth;
-}
-
-function loadIndex()
-{
-    dayList.forEach(displayAll);
-}
-
-function displayAll(dayToSet)
-{
-    displayImage(dayToSet);
-    displayTemperatures(dayToSet);
-    displayDescription(dayToSet);
-}
-
-function displayDescription(dayToSet)
-{
-    var descriptionListLength = weatherDescriptionList.length;
-    var randomIndex = Math.floor(Math.random() * descriptionListLength);
-    var weatherDescription = weatherDescriptionList[randomIndex];
-
-    if (dayToSet.dayIndex == 0)
-    {
-        document.getElementById("Description").innerHTML = "It is " + dayToSet.currentTemperature + " degrees with " + weatherConditionList[dayToSet.weatherConditionIndex].description + " skies. " + weatherDescription;
-    }
-    else
-    {
-        var monthDay = "MonthDay" + dayToSet.dayIndex;
-        var monthDayDescription = dayToSet.monthDayDescription;
-
-        document.getElementById(monthDay).innerHTML = monthDayDescription;
-    }
-}
-
-function displayTemperatures(dayToSet)
-{
-    if (dayToSet.dayIndex == 0)
-    {
-        document.getElementById("Temperature").innerHTML = dayToSet.currentTemperature + "&deg";
-    }
-    else
-    {
-        var highHtmlId = "High" + dayToSet.dayIndex;
-        var lowHtmlId = "Low" + dayToSet.dayIndex;
-
-        document.getElementById(highHtmlId).innerHTML = "High: " + dayToSet.highTemperature + "&deg";
-        document.getElementById(lowHtmlId).innerHTML = "Low: " + dayToSet.lowTemperature + "&deg"; 
-    }
-}
-
-function displayImage(dayToSet)
-{
-    if (dayToSet.dayIndex == 0)
-    {
-        var date = new Date();
-
-        if (dayToSet.weatherConditionIndex == 0)
-        {
-            if (date.isDaytime)
-            {
-                document.getElementById("Image").src = "./img/sun-large.png";
-                document.body.style.backgroundColor = "lightSteelBlue";
-            }
-            else
-            {
-                document.getElementById("Image").src = "./img/moon-large.png";
-                document.body.style.backgroundColor = "SteelBlue";
-            }
-        }
-        else
-        {
-            document.getElementById("Image").src = dayToSet.imageBase + "-large.png";
-        }
-    }
-    else
-    {
-        var htmlId = "Image" + dayToSet.dayIndex;
-        document.getElementById(htmlId).src = dayToSet.imageBase + "-small.png";
-    }
-}
-
-function changeWeather(elementId)
-{
-    var index = 0;
-
-    if (elementId != "Image")
-    {
-        var length = elementId.length;
-
-        var index = elementId.substring(length - 1, length);
-    }
-
-    var dayToChange = dayList[index];
-
-    var weatherConditionCount = weatherConditionList.length - 1;
-    var currentConditionIndex = dayToChange.weatherConditionIndex;
-    var newConditionIndex = 0;
-
-    if ((currentConditionIndex + 1) <= weatherConditionCount)
-    {
-        newConditionIndex = currentConditionIndex + 1;
-    }
-
-    var newCondition = weatherConditionList[newConditionIndex];
-
-    dayToChange.weatherConditionIndex = newConditionIndex;
-    dayToChange.currentTemperature = idealTemp + newCondition.temperatureOffset;
-    dayToChange.highTemperature = dayToChange.currentTemperature + highAdjustment;
-    dayToChange.lowTemperature = dayToChange.currentTemperature + lowAdjustment;
-    dayToChange.imageBase = newCondition.imageBase;
-
-    displayAll(dayToChange);
+// Get weather icon based on weather condition
+function getWeatherIcon(weatherType) {
+    const icon = weatherIconMap[weatherType.toLowerCase()];
+    return icon || './img/sun'; // Default to sun if unknown
 }
 
 // Real Weather Functions
@@ -334,6 +250,8 @@ async function searchWeather(event) {
             currentLocation = locationParts.join(', ');
             displayRealWeather();
             searchStatus.innerHTML = `Weather data loaded for ${currentLocation}!`;
+            addLocationToSaved(currentLocation); // Save the location
+            updateURL(currentLocation); // Update URL with current location
         } else {
             searchStatus.innerHTML = 'Failed to load weather data. Please try again.';
         }
@@ -464,8 +382,8 @@ function displayRealWeather() {
     
     console.log('Full weather data received:', realWeatherData);
     
-    // Show reset button
-    document.getElementById('resetButton').style.display = 'inline-block';
+    // Show current weather section
+    document.getElementById('currentWeather').style.display = 'block';
     
     // Update current day weather
     const currentWeather = realWeatherData.list[0];
@@ -485,9 +403,8 @@ function displayRealWeather() {
     updateWeatherImage(weatherMain, 0);
     
     // Update description
-    const randomDescription = weatherDescriptionList[Math.floor(Math.random() * weatherDescriptionList.length)];
     document.getElementById('Description').innerHTML = 
-        `It is ${currentTemp} degrees with ${weatherMain} conditions in ${currentLocation}. ${randomDescription}`;
+        `It is ${currentTemp} degrees with ${weatherMain} conditions in ${currentLocation}`;
     
     // Update 7-day forecast
     updateForecast();
@@ -583,17 +500,6 @@ function updateForecast() {
         // Update weather image
         updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
     });
-}
-
-function resetToFakeWeather() {
-    realWeatherData = null;
-    currentLocation = '';
-    
-    // Hide reset button
-    document.getElementById('resetButton').style.display = 'none';
-    
-    document.getElementById('searchStatus').innerHTML = 'Showing alternative weather data.';
-    loadIndex(); // Reload fake weather
 }
 
 // API Key Validation
