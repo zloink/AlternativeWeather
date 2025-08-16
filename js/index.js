@@ -1,5 +1,5 @@
 // OpenWeatherMap API Configuration
-const WEATHER_API_KEY = '4a47274ba197832cef2f28679963ccc8'; // Replace with your actual API key
+const WEATHER_API_KEY = config.WEATHER_API_KEY; // Get from config file
 const WEATHER_API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 const GEOCODING_API_BASE_URL = 'https://api.openweathermap.org/geo/1.0';
 
@@ -271,6 +271,11 @@ async function testAPIKey() {
 async function searchWeather(event) {
     event.preventDefault();
     
+    // Check if API key is set
+    if (!validateAPIKey()) {
+        return;
+    }
+    
     const locationInput = document.getElementById('locationInput');
     const searchStatus = document.getElementById('searchStatus');
     const input = locationInput.value.trim();
@@ -536,4 +541,13 @@ function resetToFakeWeather() {
     
     document.getElementById('searchStatus').innerHTML = 'Showing alternative weather data.';
     loadIndex(); // Reload fake weather
+}
+
+// API Key Validation
+function validateAPIKey() {
+    if (!WEATHER_API_KEY || WEATHER_API_KEY === 'YOUR_API_KEY_HERE') {
+        console.error('API key not configured. Please create config.js with your OpenWeatherMap API key.');
+        return false;
+    }
+    return true;
 }
