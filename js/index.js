@@ -12,7 +12,7 @@ let lastLocation = '';
 function updateDayHeaders() {
     const today = new Date();
     
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 5; i++) {
         const futureDate = new Date(today);
         futureDate.setDate(today.getDate() + i);
         
@@ -411,11 +411,11 @@ function updateForecast() {
     console.log('Daily forecasts grouped:', dailyForecasts);
     console.log('Available forecast days:', Object.keys(dailyForecasts));
     
-    // Get the next available days (OpenWeatherMap provides 5 days max)
+    // Get the next 5 days (excluding today) - OpenWeatherMap provides 5 days max
     const today = new Date();
     const availableDays = [];
     
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 5; i++) {
         const futureDate = new Date(today);
         futureDate.setDate(today.getDate() + i);
         const dayKey = futureDate.toISOString().split('T')[0];
@@ -433,12 +433,6 @@ function updateForecast() {
     }
     
     console.log('Available days to display:', availableDays);
-    
-    // Update the forecast header to reflect actual available days
-    const availableDayCount = availableDays.length;
-    if (availableDayCount < 7) {
-        document.querySelector('h2').innerHTML = `${availableDayCount}-day forecast`;
-    }
     
     // Update each available day's forecast
     availableDays.forEach(day => {
@@ -467,13 +461,6 @@ function updateForecast() {
         // Update weather image
         updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
     });
-    
-    // Clear any remaining days that don't have data
-    for (let i = availableDayCount + 1; i <= 7; i++) {
-        document.getElementById(`High${i}`).innerHTML = `High: --&deg`;
-        document.getElementById(`Low${i}`).innerHTML = `Low: --&deg`;
-        // Keep default weather icon
-    }
 }
 
 // API Key Validation
