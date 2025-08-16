@@ -5,8 +5,8 @@ A clean, functional weather application that provides real-time weather data and
 ## Features
 
 - **Real Weather Data**: Get actual weather information for any US ZIP code or city using OpenWeatherMap API
-- **Location Memory**: Save and manage your favorite locations
-- **URL Sharing**: Share weather for specific locations via URL parameters
+- **Location Memory**: Automatically remembers your last searched location
+- **URL Sharing**: Share weather for specific ZIP codes via URL parameters (e.g., ?zip=23117)
 - **7-Day Forecast**: View detailed weather forecasts with accurate daily temperature ranges
 - **Mobile Responsive**: Optimized design that works great on all devices
 - **Clean Interface**: Modern, user-friendly design focused on functionality
@@ -45,8 +45,8 @@ const config = {
 ## How It Works
 
 - **Location Search**: Enter ZIP codes or city names for weather data
-- **Automatic Saving**: Locations are automatically saved to your browser
-- **URL Sharing**: Weather URLs include location parameters for easy sharing
+- **Automatic Memory**: Last location is automatically saved to localStorage
+- **URL Sharing**: Weather URLs include ZIP code parameters for easy sharing
 - **Real-time Data**: Current conditions and 7-day forecasts from OpenWeatherMap
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
@@ -81,5 +81,5 @@ WeatherApp/
 
 - The free OpenWeatherMap API has rate limits (1000 calls/day)
 - Weather data is updated every 3 hours
-- Locations are saved locally in your browser
-- URLs can be shared to show specific location weather 
+- Last location is saved locally in your browser
+- URLs can be shared to show specific ZIP code weather 

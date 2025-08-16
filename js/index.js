@@ -6,7 +6,7 @@ const GEOCODING_API_BASE_URL = 'https://api.openweathermap.org/geo/1.0';
 // Weather data storage
 let realWeatherData = null;
 let currentLocation = '';
-let savedLocations = [];
+let lastLocation = '';
 
 // Update day headers in forecast table
 function updateDayHeaders() {
@@ -26,85 +26,40 @@ function updateDayHeaders() {
 
 // Initialize the app
 function loadIndex() {
-    loadSavedLocations();
+    loadLastLocation();
     checkURLForLocation();
     updateDayHeaders();
 }
 
-// Load saved locations from localStorage
-function loadSavedLocations() {
-    const saved = localStorage.getItem('weatherLocations');
+// Load last used location from localStorage
+function loadLastLocation() {
+    const saved = localStorage.getItem('lastWeatherLocation');
     if (saved) {
-        savedLocations = JSON.parse(saved);
-        displaySavedLocations();
+        lastLocation = saved;
+        // Don't auto-load, just remember it
     }
 }
 
-// Save locations to localStorage
-function saveLocations() {
-    localStorage.setItem('weatherLocations', JSON.stringify(savedLocations));
+// Save location to localStorage (silent, no UI)
+function saveLocation(location) {
+    localStorage.setItem('lastWeatherLocation', location);
+    lastLocation = location;
 }
 
-// Display saved locations
-function displaySavedLocations() {
-    const container = document.getElementById('savedLocations');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    if (savedLocations.length === 0) {
-        container.innerHTML = '<p class="no-locations">No saved locations yet. Search for a location to get started!</p>';
-        return;
-    }
-    
-    savedLocations.forEach((location, index) => {
-        const locationDiv = document.createElement('div');
-        locationDiv.className = 'saved-location';
-        locationDiv.innerHTML = `
-            <span class="location-name">${location.name}</span>
-            <button onclick="loadLocation('${location.name}')" class="load-btn">Load</button>
-            <button onclick="removeLocation(${index})" class="remove-btn">×</button>
-        `;
-        container.appendChild(locationDiv);
-    });
-}
-
-// Add location to saved list
-function addLocationToSaved(locationName) {
-    if (!savedLocations.find(loc => loc.name === locationName)) {
-        savedLocations.push({ name: locationName, timestamp: Date.now() });
-        saveLocations();
-        displaySavedLocations();
-    }
-}
-
-// Remove location from saved list
-function removeLocation(index) {
-    savedLocations.splice(index, 1);
-    saveLocations();
-    displaySavedLocations();
-}
-
-// Load a saved location
-function loadLocation(locationName) {
-    document.getElementById('locationInput').value = locationName;
-    searchWeather(new Event('submit'));
-}
-
-// Check URL for location parameter
+// Check URL for ZIP code parameter
 function checkURLForLocation() {
     const urlParams = new URLSearchParams(window.location.search);
-    const location = urlParams.get('location');
-    if (location) {
-        document.getElementById('locationInput').value = location;
+    const zipCode = urlParams.get('zip');
+    if (zipCode) {
+        document.getElementById('locationInput').value = zipCode;
         searchWeather(new Event('submit'));
     }
 }
 
-// Update URL with current location
-function updateURL(location) {
+// Update URL with current ZIP code
+function updateURL(zipCode) {
     const url = new URL(window.location);
-    url.searchParams.set('location', location);
+    url.searchParams.set('zip', zipCode);
     window.history.pushState({}, '', url);
 }
 
@@ -250,8 +205,8 @@ async function searchWeather(event) {
             currentLocation = locationParts.join(', ');
             displayRealWeather();
             searchStatus.innerHTML = `Weather data loaded for ${currentLocation}!`;
-            addLocationToSaved(currentLocation); // Save the location
-            updateURL(currentLocation); // Update URL with current location
+            saveLocation(currentLocation); // Save the location
+            updateURL(input); // Update URL with current location
         } else {
             searchStatus.innerHTML = 'Failed to load weather data. Please try again.';
         }
@@ -468,6 +423,13 @@ function updateForecast() {
                 dayIndex: i,
                 data: dailyForecasts[dayKey]
             });
+        } else {
+            // If no data for this day, create a placeholder
+            console.warn(`No forecast data for ${dayKey}, creating placeholder`);
+            next7Days.push({
+                dayIndex: i,
+                data: null
+            });
         }
     }
     
@@ -476,29 +438,38 @@ function updateForecast() {
     // Update each day's forecast
     next7Days.forEach(day => {
         const dayIndex = day.dayIndex;
-        const dayData = day.data;
         
-        // Calculate daily high/low from all temperature readings
-        const highTemp = Math.round(Math.max(...dayData.temps));
-        const lowTemp = Math.round(Math.min(...dayData.temps));
-        
-        // Get most common weather condition for the day
-        const weatherCounts = {};
-        dayData.weather.forEach(weather => {
-            weatherCounts[weather] = (weatherCounts[weather] || 0) + 1;
-        });
-        const mostCommonWeather = Object.keys(weatherCounts).reduce((a, b) => 
-            weatherCounts[a] > weatherCounts[b] ? a : b
-        );
-        
-        console.log(`Day ${dayIndex}: High=${highTemp}, Low=${lowTemp}, Weather=${mostCommonWeather}`);
-        
-        // Update temperatures
-        document.getElementById(`High${dayIndex}`).innerHTML = `High: ${highTemp}&deg`;
-        document.getElementById(`Low${dayIndex}`).innerHTML = `Low: ${lowTemp}&deg`;
-        
-        // Update weather image
-        updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
+        if (day.data) {
+            const dayData = day.data;
+            
+            // Calculate daily high/low from all temperature readings
+            const highTemp = Math.round(Math.max(...dayData.temps));
+            const lowTemp = Math.round(Math.min(...dayData.temps));
+            
+            // Get most common weather condition for the day
+            const weatherCounts = {};
+            dayData.weather.forEach(weather => {
+                weatherCounts[weather] = (weatherCounts[weather] || 0) + 1;
+            });
+            const mostCommonWeather = Object.keys(weatherCounts).reduce((a, b) => 
+                weatherCounts[a] > weatherCounts[b] ? a : b
+            );
+            
+            console.log(`Day ${dayIndex}: High=${highTemp}, Low=${lowTemp}, Weather=${mostCommonWeather}`);
+            
+            // Update temperatures
+            document.getElementById(`High${dayIndex}`).innerHTML = `High: ${highTemp}&deg`;
+            document.getElementById(`Low${dayIndex}`).innerHTML = `Low: ${lowTemp}&deg`;
+            
+            // Update weather image
+            updateWeatherImage(mostCommonWeather.toLowerCase(), dayIndex);
+        } else {
+            // Handle missing data
+            console.log(`Day ${dayIndex}: No data available`);
+            document.getElementById(`High${dayIndex}`).innerHTML = `High: --&deg`;
+            document.getElementById(`Low${dayIndex}`).innerHTML = `Low: --&deg`;
+            // Keep default weather icon
+        }
     });
 }
 
