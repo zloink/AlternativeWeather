@@ -2,35 +2,36 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="./css/alternativeweather.css">
-<title>Alternative Weather</title>
+<title>Weather App</title>
 </head>
 <body onload="loadIndex()">
 
 <script type="text/javascript" src="./config.js"></script>
 <script type="text/javascript" src="./js/index.js"></script>
 
+<div class="header">
+	<h1>Weather App</h1>
+	<h5 id="Time"></h5>
+</div>
+
 <div class="search-container">
     <form id="locationForm" onsubmit="searchWeather(event)">
         <input type="text" id="locationInput" placeholder="Enter ZIP code or city name..." required>
-        <button type="submit">Get Real Weather</button>
-        <button type="button" onclick="resetToFakeWeather()" id="resetButton" style="display: none;">Back to Alternative Weather</button>
+        <button type="submit">Get Weather</button>
     </form>
     <div id="searchStatus"></div>
 </div>
 
-<div class="header">
-	<h1>Alternative Weather</h1>
-	<h5 id="Time"></h5>
+<div class="saved-locations-container">
+    <h3>Saved Locations</h3>
+    <div id="savedLocations"></div>
 </div>
 
-<div class="today">
+<div class="today" id="currentWeather" style="display: none;">
 	<h5 id="Description"></h5>
-	<a href="https://twitter.com/intent/tweet?button_hashtag=notmyweather" class="twitter-hashtag-button" data-size="large" data-url="http://www.alternativeweather.com" data-show-count="false">Tweet #notmyweather</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    
-
     <table>
         <tr>
-            <td><img id="Image" src="./img/sun-large.png" alt="sun.png" onclick="changeWeather(this.id)"/></td>
+            <td><img id="Image" src="./img/sun-large.png" alt="weather"/></td>
             <td>
                 <h1 id="Temperature"></h1>
             </td>
@@ -39,58 +40,60 @@
 </div>
 
 <h2>Seven day forecast</h2>
-<table style="width:100%">
-	<tr>
-    	<th id="MonthDay1">Monday 1/1</th>
-    	<th id="MonthDay2">Tuesday 1/2</th> 
-    	<th id="MonthDay3">Wednesday 1/3</th>
-    	<th id="MonthDay4">Thursday 1/4</th>
-    	<th id="MonthDay5">Friday 1/5</th> 
-    	<th id="MonthDay6">Saturday 1/6</th>
-    	<th id="MonthDay7">Sunday 1/7</th>
-    </tr>
-	<tr>
-		<td id="High1">High: 78&deg</td>
-    	<td id="High2">High: 78&deg</td> 
-    	<td id="High3">High: 78&deg</td>
-    	<td id="High4">High: 78&deg</td>
-    	<td id="High5">High: 78&deg</td> 
-    	<td id="High6">High: 78&deg</td>
-    	<td id="High7">High: 78&deg</td>
-    </tr>
-    <tr>
-        <td id="Low1">Low: 68&deg</td>
-    	<td id="Low2">Low: 68&deg</td> 
-    	<td id="Low3">Low: 68&deg</td>
-    	<td id="Low4">Low: 68&deg</td>
-    	<td id="Low5">Low: 68&deg</td> 
-    	<td id="Low6">Low: 68&deg</td>
-    	<td id="Low7">Low: 68&deg</td>
-    </tr>
-    <tr>
-    	<td>
-    		<img id="Image1" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-    	<td>
-    		<img id="Image2" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-    	<td>
-    		<img id="Image3" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-    	<td>
-    		<img id="Image4" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-    	<td>
-    		<img id="Image5" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-    	<td>
-    		<img id="Image6" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-    	<td>
-    		<img id="Image7" src="./img/sun-small.png" alt="sun.png" onclick="changeWeather(this.id)"/>
-    	</td>
-	</tr>
- </table>
+<div class="forecast-container">
+    <table style="width:100%">
+    	<tr>
+        	<th id="MonthDay1">Monday 1/1</th>
+        	<th id="MonthDay2">Tuesday 1/2</th> 
+        	<th id="MonthDay3">Wednesday 1/3</th>
+        	<th id="MonthDay4">Thursday 1/4</th>
+        	<th id="MonthDay5">Friday 1/5</th> 
+        	<th id="MonthDay6">Saturday 1/6</th>
+        	<th id="MonthDay7">Sunday 1/7</th>
+        </tr>
+    	<tr>
+    		<td id="High1">High: --&deg</td>
+        	<td id="High2">High: --&deg</td> 
+        	<td id="High3">High: --&deg</td>
+        	<td id="High4">High: --&deg</td>
+        	<td id="High5">High: --&deg</td> 
+        	<td id="High6">High: --&deg</td>
+        	<td id="High7">High: --&deg</td>
+        </tr>
+        <tr>
+            <td id="Low1">Low: --&deg</td>
+        	<td id="Low2">Low: --&deg</td> 
+        	<td id="Low3">Low: --&deg</td>
+        	<td id="Low4">Low: --&deg</td>
+        	<td id="Low5">Low: --&deg</td> 
+        	<td id="Low6">Low: --&deg</td>
+        	<td id="Low7">Low: --&deg</td>
+        </tr>
+        <tr>
+        	<td>
+        		<img id="Image1" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+        	<td>
+        		<img id="Image2" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+        	<td>
+        		<img id="Image3" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+        	<td>
+        		<img id="Image4" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+        	<td>
+        		<img id="Image5" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+        	<td>
+        		<img id="Image6" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+        	<td>
+        		<img id="Image7" src="./img/sun-small.png" alt="weather"/>
+        	</td>
+    	</tr>
+     </table>
+</div>
 
 </body>
 </html>

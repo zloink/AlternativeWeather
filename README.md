@@ -1,14 +1,15 @@
-# Alternative Weather Website
+# Weather App
 
-A satirical weather website that now includes real weather data functionality while maintaining its humorous alternative weather descriptions.
+A clean, functional weather application that provides real-time weather data and forecasts for any location using OpenWeatherMap API.
 
 ## Features
 
-- **Real Weather Data**: Get actual weather information for any US ZIP code using OpenWeatherMap API
-- **Alternative Weather**: Satirical weather descriptions and fake weather data for entertainment
-- **7-Day Forecast**: View both real and alternative weather forecasts
-- **Interactive Weather Icons**: Click to cycle through different weather conditions
-- **Responsive Design**: Modern, user-friendly interface
+- **Real Weather Data**: Get actual weather information for any US ZIP code or city using OpenWeatherMap API
+- **Location Memory**: Save and manage your favorite locations
+- **URL Sharing**: Share weather for specific locations via URL parameters
+- **7-Day Forecast**: View detailed weather forecasts with accurate daily temperature ranges
+- **Mobile Responsive**: Optimized design that works great on all devices
+- **Clean Interface**: Modern, user-friendly design focused on functionality
 
 ## Setup Instructions
 
@@ -37,51 +38,48 @@ const config = {
 ### 3. Run the Website
 
 1. Open `index.html` in a web browser
-2. The website will load with alternative weather data by default
-3. Enter a US ZIP code or city name to get real weather
-4. Click "Back to Alternative Weather" to return to fake weather
-
-## Security Features
-
-- **No Hardcoded Keys**: API keys are stored in separate config files
-- **Gitignored Config**: `config.js` is automatically excluded from version control
-- **Template-Based**: Easy setup with clear configuration structure
-- **Secure by Default**: Website works without exposing sensitive data in source code
+2. Enter a ZIP code or city name to get weather data
+3. Save locations for quick access
+4. Share weather URLs with others
 
 ## How It Works
 
-- **Default State**: Shows humorous alternative weather with fake temperatures and descriptions
-- **Real Weather Mode**: Enter a US ZIP code to get actual weather data from OpenWeatherMap
-- **Weather Icons**: Click any weather icon to cycle through different conditions (sun, rain, snow)
-- **API Integration**: Uses OpenWeatherMap's ZIP code geocoding and weather forecast APIs
+- **Location Search**: Enter ZIP codes or city names for weather data
+- **Automatic Saving**: Locations are automatically saved to your browser
+- **URL Sharing**: Weather URLs include location parameters for easy sharing
+- **Real-time Data**: Current conditions and 7-day forecasts from OpenWeatherMap
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
 ## API Endpoints Used
 
 - **ZIP Code Geocoding API**: Converts US ZIP codes to coordinates
+- **City Geocoding API**: Converts city names to coordinates
 - **5-Day Forecast API**: Gets weather data for current and upcoming days
 
 ## File Structure
 
 ```
-AlternativeWeather/
+WeatherApp/
 ├── index.html          # Main HTML file
 ├── css/
-│   └── alternativeweather.css  # Styles
+│   └── alternativeweather.css  # Responsive styles
 ├── js/
-│   └── index.js        # JavaScript functionality
+│   └── index.js        # Weather functionality
 ├── img/                # Weather icons
+├── config.js           # API key configuration (create this)
 └── README.md           # This file
 ```
 
 ## Browser Compatibility
 
 - Modern browsers with ES6+ support
-- Requires internet connection for real weather data
-- Works offline for alternative weather display
+- Requires internet connection for weather data
+- Responsive design works on all screen sizes
+- LocalStorage for saving locations
 
 ## Notes
 
 - The free OpenWeatherMap API has rate limits (1000 calls/day)
 - Weather data is updated every 3 hours
-- Alternative weather maintains the original satirical humor
-- Real weather includes temperature, conditions, and 7-day forecast 
+- Locations are saved locally in your browser
+- URLs can be shared to show specific location weather 
